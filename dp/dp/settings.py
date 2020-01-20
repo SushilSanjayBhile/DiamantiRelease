@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+from constraints import *
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -73,59 +74,41 @@ WSGI_APPLICATION = 'dp.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
+
 DATABASES = {
+    '2.3.0': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': '2.3.0',
+        'USER': userName,
+        'PASSWORD': passwd,
+        'HOST': hostName,
+        'PORT': portNumber,
+        },
+    'master': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'master',
+        'USER': userName,
+        'PASSWORD': passwd,
+        'HOST': hostName,
+        'PORT': portNumber,
+        },
+    'universal': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'universal',
+        'USER': userName,
+        'PASSWORD': passwd,
+        'HOST': hostName,
+        'PORT': portNumber,
+        },
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'universal',
-        'USER': 'sushil',
-        'PASSWORD': 's',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    },
-    '2.3.0.': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': '2.3.0',
-        'USER': 'sushil',
-        'PASSWORD': 's',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    },
-    'users': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'users',
-        'USER': 'sushil',
-        'PASSWORD': 's',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+        'USER': userName,
+        'PASSWORD': passwd,
+        'HOST': hostName,
+        'PORT': portNumber,
+        },
 }
-# DATABASE_ROUTERS = ['manager.router.DatabaseAppsRouter']
-# DATABASE_APPS_MAPPING = {'Release': 'Releases', 
-#                          'Universal':'Universal'}
-
-# DATABASES = {
-#     'default': {
-#             'ENGINE': 'django.db.backends.postgresql_psycopg2', 
-#             'NAME': 'fail_over',                    
-#             'USER': 'sushil',                      
-#             'PASSWORD': 'sushil'                                  
-#     },
-
-#     'Release': {
-#             'ENGINE': 'django.db.backends.postgresql_psycopg2', 
-#             'NAME': 'Release',                    
-#             'USER': 'sushil',                      
-#             'PASSWORD': 'sushil'                                  
-#     },
-
-#     'Universal': {
-#             'ENGINE': 'django.db.backends.postgresql_psycopg2', 
-#             'NAME': 'Universal',                    
-#             'USER': 'sushil',                      
-#             'PASSWORD': 'sushil'                 
-#     },
-# }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
