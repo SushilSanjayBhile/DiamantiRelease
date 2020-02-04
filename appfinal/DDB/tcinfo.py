@@ -287,6 +287,7 @@ def GET_TC_INFO_BY_ID(request, Release, id, card):
 @csrf_exempt
 def UPDATE_TC_INFO_BY_ID(request, Release, id, card):
     if request.method == "PUT":
+        errRecords = []
         req = json.loads(request.body.decode("utf-8"))
 
         data = TC_INFO.objects.using(Release).filter(TcID = id)
@@ -307,7 +308,7 @@ def UPDATE_TC_INFO_BY_ID(request, Release, id, card):
             if res == 0:
                 errRecords.append(req)
             elif "Activity" in req:
-                AD = requests['Activity']
+                AD = req['Activity']
                 GenerateLogData(AD['UserName'], AD['RequestType'], AD['URL'], AD['LogData'], AD['TcID'], AD['CardType'], AD['Release'])
         
         if len(errRecords) > 0:
