@@ -1,0 +1,224 @@
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+[24/Jan/2020 14:40:49] "GET /api/release/all HTTP/1.1" 200 44958
+Not Found: /favicon.ico
+[24/Jan/2020 14:40:49] "GET /favicon.ico HTTP/1.1" 404 2198
+[24/Jan/2020 14:41:06] "GET /api/release/all HTTP/1.1" 200 44958
+[24/Jan/2020 14:41:56] "GET /api/release/all HTTP/1.1" 200 44958
+[24/Jan/2020 14:44:53] "GET /api/release/all HTTP/1.1" 200 44958
+[27/Jan/2020 06:08:36] "GET /api/release/all HTTP/1.1" 200 44958
+[27/Jan/2020 06:08:44] "GET /api/release/all HTTP/1.1" 200 44958
+Not Found: /favicon.ico
+[27/Jan/2020 06:08:45] "GET /favicon.ico HTTP/1.1" 404 2198
+[27/Jan/2020 06:11:50] "DELETE /api/release/master HTTP/1.1" 200 20
+[27/Jan/2020 06:11:57] "GET /api/release/all HTTP/1.1" 200 22985
+Not Found: /api/release1
+[27/Jan/2020 06:19:48] "POST /api/release1 HTTP/1.1" 404 5671
+[27/Jan/2020 06:20:48] "GET /api/release/all HTTP/1.1" 200 22985
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 24, 2020 - 14:40:45
+Django version 3.0, using settings 'dp.settings'
+Starting development server at http://0:8000/
+Quit the server with CONTROL-C.
+this is total 3537
+automated 3548
+this is total 3599
+automated 3610
+this is total 3537
+automated 3548
+this is total 3599
+automated 3610
+this is total 3537
+automated 3548
+this is total 3599
+automated 3610
+this is total 3537
+automated 3548
+this is total 3599
+automated 3610
+this is total 3537
+automated 3548
+this is total 3599
+automated 3610
+this is total 3537
+automated 3548
+this is total 3599
+automated 3610
+this is total 3599
+automated 3610
+this is total 3599
+automated 3610
+Watching for file changes with StatReloader
+[03/Feb/2020 13:05:53] "GET /api/release/all HTTP/1.1" 200 75901
+[03/Feb/2020 13:07:53] "PUT /api/tcupdate/2.4.0 HTTP/1.1" 200 7
+[03/Feb/2020 13:07:55] "GET /api/wholetcinfo/2.4.0 HTTP/1.1" 200 3718260
+[03/Feb/2020 13:10:15] "GET /api/tcinfo/2.4.0/id/RS_Simulate-1.1/card/BOS HTTP/1.1" 200 739
+Performing system checks...
+
+System check identified no issues (0 silenced).
+February 03, 2020 - 13:05:28
+Django version 3.0, using settings 'dp.settings'
+Starting development server at http://0:8000/
+Quit the server with CONTROL-C.
+this is total 0
+automated 0
+this is total 0
+automated 0
+this is total 0
+automated 27
+this is total 0
+automated 0
+this is total 0
+automated 0
+2
+Watching for file changes with StatReloader
+[04/Feb/2020 03:36:26] "GET /api/release/all HTTP/1.1" 200 75901
+[04/Feb/2020 03:38:05] "GET /api/userinfo/ HTTP/1.1" 200 11078
+[04/Feb/2020 03:38:07] "GET /api/release/all HTTP/1.1" 200 75901
+[04/Feb/2020 03:38:28] "GET /api/wholetcinfo/2.4.0 HTTP/1.1" 200 3718260
+[04/Feb/2020 03:41:20] "GET /api/tcinfo/2.4.0/id/SM-Subpath-1.1/card/NYNJ HTTP/1.1" 200 562
+[04/Feb/2020 03:41:34] "GET /api/tcinfo/2.4.0/id/RS_Verify-1.2/card/NYNJ HTTP/1.1" 200 756
+[04/Feb/2020 03:42:35] "GET /api/wholetcinfo/2.3.0 HTTP/1.1" 200 2
+Performing system checks...
+
+System check identified no issues (0 silenced).
+February 04, 2020 - 03:36:19
+Django version 3.0, using settings 'dp.settings'
+Starting development server at http://0:8000/
+Quit the server with CONTROL-C.
+this is total 0
+automated 0
+this is total 0
+automated 0
+this is total 0
+automated 27
+this is total 0
+automated 0
+this is total 0
+automated 0
+this is total 0
+automated 0
+this is total 0
+automated 0
+this is total 0
+automated 27
+this is total 0
+automated 0
+this is total 0
+automated 0
+Watching for file changes with StatReloader
+[04/Feb/2020 04:04:25] "GET /api/wholetcinfo/2.4.0?Domain=StoragePVC&SubDomain=PVC_Rbac&Scenario=Local%20Storage HTTP/1.1" 200 19240
+[04/Feb/2020 04:04:25] "GET /api/userinfo/ HTTP/1.1" 200 11078
+[04/Feb/2020 04:04:26] "GET /api/release/all HTTP/1.1" 200 75901
+[04/Feb/2020 04:05:02] "GET /api/wholetcinfo/2.4.0 HTTP/1.1" 200 3718260
+[04/Feb/2020 04:05:36] "GET /api/wholetcinfo/2.4.0 HTTP/1.1" 200 3718260
+[04/Feb/2020 04:32:51] "GET /api/userinfo/ HTTP/1.1" 200 11078
+[04/Feb/2020 04:32:53] "GET /api/release/all HTTP/1.1" 200 75901
+[04/Feb/2020 04:50:43] "GET /api/wholetcinfo/5.0.0? HTTP/1.1" 200 3819500
+[04/Feb/2020 04:53:47] "GET /api/userinfo/ HTTP/1.1" 200 11078
+[04/Feb/2020 04:53:49] "GET /api/release/all HTTP/1.1" 200 75901
+[04/Feb/2020 04:54:07] "GET /api/wholetcinfo/5.0.0? HTTP/1.1" 200 3819500
+[04/Feb/2020 04:55:03] "GET /api/userinfo HTTP/1.1" 301 0
+[04/Feb/2020 04:55:05] "GET /api/userinfo/ HTTP/1.1" 200 11078
+[04/Feb/2020 04:55:06] "GET /api/release/all HTTP/1.1" 200 75901
+Internal Server Error: /api/wholetcinfo/undefined
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.6/dist-packages/django/db/utils.py", line 172, in ensure_defaults
+    conn = self.databases[alias]
+KeyError: 'undefined'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.6/dist-packages/django/core/handlers/exception.py", line 34, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.6/dist-packages/django/core/handlers/base.py", line 115, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "/usr/local/lib/python3.6/dist-packages/django/core/handlers/base.py", line 113, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.6/dist-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/appfinal/DDB/tcinfo.py", line 35, in WHOLE_TC_INFO
+    data = json.dumps(statusserializer.data)
+  File "/usr/local/lib/python3.6/dist-packages/rest_framework/serializers.py", line 760, in data
+    ret = super().data
+  File "/usr/local/lib/python3.6/dist-packages/rest_framework/serializers.py", line 260, in data
+    self._data = self.to_representation(self.instance)
+  File "/usr/local/lib/python3.6/dist-packages/rest_framework/serializers.py", line 678, in to_representation
+    self.child.to_representation(item) for item in iterable
+  File "/usr/local/lib/python3.6/dist-packages/django/db/models/query.py", line 276, in __iter__
+    self._fetch_all()
+  File "/usr/local/lib/python3.6/dist-packages/django/db/models/query.py", line 1261, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "/usr/local/lib/python3.6/dist-packages/django/db/models/query.py", line 54, in __iter__
+    compiler = queryset.query.get_compiler(using=db)
+  File "/usr/local/lib/python3.6/dist-packages/django/db/models/sql/query.py", line 282, in get_compiler
+    connection = connections[using]
+  File "/usr/local/lib/python3.6/dist-packages/django/db/utils.py", line 204, in __getitem__
+    self.ensure_defaults(alias)
+  File "/usr/local/lib/python3.6/dist-packages/django/db/utils.py", line 174, in ensure_defaults
+    raise ConnectionDoesNotExist("The connection %s doesn't exist" % alias)
+django.db.utils.ConnectionDoesNotExist: The connection undefined doesn't exist
+[04/Feb/2020 04:55:09] "GET /api/wholetcinfo/undefined? HTTP/1.1" 500 114767
+[04/Feb/2020 04:55:38] "GET /api/wholetcinfo/5.0.0? HTTP/1.1" 200 3819500
+[04/Feb/2020 04:55:58] "GET /api/wholetcinfo/5.0.0? HTTP/1.1" 200 3819500
+[04/Feb/2020 05:27:20] "GET /api/release/all HTTP/1.1" 200 75901
+Performing system checks...
+
+System check identified no issues (0 silenced).
+February 04, 2020 - 04:04:18
+Django version 3.0, using settings 'dp.settings'
+Starting development server at http://0:8000/
+Quit the server with CONTROL-C.
+this is total 0
+automated 0
+this is total 0
+automated 0
+this is total 0
+automated 27
+this is total 0
+automated 0
+this is total 0
+automated 0
+this is total 0
+automated 0
+this is total 0
+automated 0
+this is total 0
+automated 27
+this is total 0
+automated 0
+this is total 0
+automated 0
+this is total 0
+automated 0
+this is total 0
+automated 0
+this is total 0
+automated 27
+this is total 0
+automated 0
+this is total 0
+automated 0
+this is total 0
+automated 0
+this is total 0
+automated 0
+this is total 0
+automated 27
+this is total 0
+automated 0
+this is total 0
+automated 0
+this is total 0
+automated 0
+this is total 0
+automated 0
+this is total 0
+automated 27
+this is total 0
+automated 0
+this is total 0
+automated 0
