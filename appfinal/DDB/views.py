@@ -242,7 +242,7 @@ def TCAGGREGATE(Release):
 
                 dictionary['domain'][tc['Domain']]['Tested'] = {}
 
-                domainallcount = TC_INFO.objects.using(Release).filter(Domain = tc['Domain']).count()
+                domainallcount = TC_INFO.objects.using(Release).filter(Domain = tc['Domain']).filter(~Q(Priority = 'NA')).count()
                 dictionary['domain'][tc['Domain']]['NotApplicable'] = 0
 
                 dictionary['domain'][tc['Domain']]['Tested']['auto'] = {}

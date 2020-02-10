@@ -5,7 +5,7 @@ from .views import (TCSTATUSGETPOSTVIEW, USER_INFO_GET_POST_VIEW,
         GETPLATFORMANDSETUPWISETCINFO, TCAGGREGATE, DOMAINWISETCSTATUS, DOMAINWISETCINFO, USER_LOGIN_VIEW,
         GUITCSTATUSGETPOSTVIEW, createDB)
 
-from .tcinfo import TC_INFO_GET_POST_VIEW, GET_TC_INFO_BY_ID, WHOLE_TC_INFO, MULTIPLE_TC_UPDATION, UPDATE_TC_INFO_BY_ID
+from .tcinfo import TC_INFO_GET_POST_VIEW, GET_TC_INFO_BY_ID, WHOLE_TC_INFO, MULTIPLE_TC_UPDATION, UPDATE_TC_INFO_BY_ID, TcCountByFilter
 
 urlpatterns = [
     path('tcstatus/<str:Release>', TCSTATUSGETPOSTVIEW),
@@ -13,6 +13,7 @@ urlpatterns = [
     path('<str:Release>/tcstatus/domain/<str:Domain>', DOMAINWISETCSTATUS),
 
     path('tcinfo/<str:Release>', TC_INFO_GET_POST_VIEW),
+    path('tccount/<str:Release>', TcCountByFilter),
     #path('tcinfo/<str:Release>/name/<str:name>/card/<str:card>', SPECIFIC_TC_INFO_BY_NAME),
     path('tcinfo/<str:Release>/id/<str:id>/card/<str:card>', GET_TC_INFO_BY_ID),
     path('<str:Release>/tcinfo/domain/<str:Domain>', DOMAINWISETCINFO),

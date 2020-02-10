@@ -7,6 +7,7 @@ from .serializers import TC_INFO_SERIALIZER, TC_STATUS_SERIALIZER, LOG_SERIALIZE
 from .models import TC_INFO, TC_STATUS, LOGS
 from .forms import TcInfoForm
 from .views import GenerateLogData
+from django.db.models import Q
 
 @csrf_exempt
 def WHOLE_TC_INFO(request, Release):
@@ -19,10 +20,9 @@ def WHOLE_TC_INFO(request, Release):
         Domain = str(request.GET.get('Domain', None))
         SubDomain = str(request.GET.get('SubDomain', None))
         CardType = str(request.GET.get('CardType', None))
-        #Filter = str(request.GET.get('filter', None))
 
         statusdata = TC_STATUS.objects.using(Release).all().order_by('Date')
-        infodata = TC_INFO.objects.all().using(Release)
+        infodata = TC_INFO.objects.all().using(Release).filter(~Q(Domain = "GUI"))
 
         if Domain != 'None':
             infodata = infodata.filter(Domain = Domain)
@@ -63,6 +63,7 @@ def WHOLE_TC_INFO(request, Release):
                     statusDict[card][tcid].append(rec)
         
         for info in infoserializer.data:
+            #del info['Description']
             info['StautsList'] = {"id": "", "TcID": info['TcID'], "TcName": info['TcName'], "Build": "", "Result": "", "Bugs": "", "Date": "", "Domain": info['Domain'], "SubDomain": info['SubDomain'], "CardType": info['CardType']}
             info['CurrentStauts'] = {"id": "", "TcID": info['TcID'], "TcName": info['TcName'], "Build": "", "Result": "", "Bugs": "", "Date": "", "Domain": info['Domain'], "SubDomain": info['SubDomain'], "CardType": info['CardType']}
 
@@ -204,9 +205,51 @@ def updateData(updatedData, data, Release):
          return 1
      except:
          return 0
-     
+
+def TcCountByFilter(request, Release):
+        print("COMING")
+        countDict = {}
+        replaceDict = {'ManagementTestcases': "Management", "MultizoneCluster":"Multizone Cluster",  "NetworkTestCases":"Network", "Rbac":"RBAC", "Rbac":"RBAC","StorageMirrored-Tests":"Storage-Mirrored","Additionaltests":"Additional", "HelmTestCases":"Helm","Interfacetestcases":"Interface","Kubernetes-tests": "Kubernetes", "ManagementTestcases":"Management", "MultizoneCluster":"Multizone Cluster", "NetworkTestCases":"Network","QOSTestcases":"QOS","StorageMirrored-Tests":"Storage-Mirrored","StorageRemote-Tests":"Storage-Remote","StorageSnapshot-Tests":"Storage-Snapshot","Upgradetests":"Upgrade", "Storage-Tests":"Storage"}
+        for i in replaceDict:
+            data = TC_INFO.objects.filter(Domain = i).using(Release)
+            serializer = TC_INFO_SERIALIZER(data, many = True)
+
+            for d in serializer.data:
+                card = d['CardType']
+                tcid = d['TcID']
+                dat = TC_INFO.objects.using(Release).filter(TcID = tcid).get(CardType = card)
+                d = json.dumps(d)
+                d = json.loads(d)
+                updatedData = d
+
+                updatedData['Domain'] = replaceDict[i]
+                print(dat.Domain)
+                #print(updatedData, "\n",dat)
+                #updateData(updatedData, dat, Release)
+        return HttpResponse(json.dumps(countDict))
+
+def TcCountByFilter2(request, Release):
+        print("COMING")
+        countDict = {}
+        data = TC_INFO.objects.filter(Domain = "RBAC").using(Release)
+        serializer = TC_INFO_SERIALIZER(data, many = True)
+
+        for d in serializer.data:
+            card = d['CardType']
+            tcid = d['TcID']
+            dat = TC_INFO.objects.using(Release).filter(TcID = tcid).get(CardType = card)
+            d = json.dumps(d)
+            d = json.loads(d)
+            updatedData = d
+
+            if "-" not in d['TcID']:
+                print(d['TcID'], d['CardType'])
+                dat.delete()
+        return HttpResponse(json.dumps(countDict))
+
 @csrf_exempt
 def MULTIPLE_TC_UPDATION(request, Release):
+    print("COMING to update multiple TCs")
     if request.method == "PUT":
         requests = json.loads(request.body.decode("utf-8"))
         errRecords = []
