@@ -22,7 +22,7 @@ class TC_INFO(models.Model):
     SubDomain = models.CharField(max_length=50, default = "UNKNOWN", blank = True)  #remote, local, mirroring
     Scenario = models.CharField(max_length = 200, blank = True, default = "UNKNOWN") #stress, standard, negative
     Description = models.TextField(blank = True, default = "NO DESCRIPTION PROVIDED")
-    #Steps = models.TextField(blank = True, default = "NO STEPS PROVIDED")
+    Steps = models.TextField(blank = True, default = "NO STEPS PROVIDED")
     ExpectedBehaviour = models.CharField(max_length = 5000, blank = True, default = "NO EXPECTED BEHAVIOUR PROVIDED")
     Notes = models.CharField(max_length = 2000, blank = True, default = "NO NOTES PROVIDED")
     CardType = models.CharField(max_length = 100, blank = True, default=None)
@@ -154,6 +154,40 @@ class SANITY_RESULTS(models.Model):
 
     def __str__(self):
         return "{0}{1}".format(self.SanityId, self.Timestamp)
+
+# Table to store e2e result
+class E2E(models.Model):
+    User = models.CharField(max_length = 100, blank = False, default = "UNKNOWN")
+    Date = models.DateTimeField(auto_now = False, blank = True, null=True)
+    Build = models.CharField(max_length = 100, blank = True, null = True)
+    Result = models.CharField(max_length = 14, blank = True, null = True)
+    Bugs = models.CharField(max_length = 500, blank = True, null = True) # we can make this as list field also
+    Setup = models.CharField(max_length = 100, blank = True, null = True) # we can make this as list field also
+    NoOfTCsPassed = models.IntegerField(blank = True, null = True)
+    E2EFocus = models.CharField(max_length = 100, blank = True, null = True)
+    Notes = models.TextField(blank = True, null = True)
+    
+
+# Table to store Longevity result
+class LONGEVITY(models.Model):
+    User = models.CharField(max_length = 100, blank = False, default = "UNKNOWN")
+    Date = models.DateTimeField(auto_now = False, blank = True, null=True)
+    Build = models.CharField(max_length = 100, blank = True, null = True)
+    Result = models.CharField(max_length = 14, blank = True, null = True)
+    Bugs = models.CharField(max_length = 500, blank = True, null = True) # we can make this as list field also
+    Setup = models.CharField(max_length = 100, blank = True, null = True) # we can make this as list field also
+    Notes = models.TextField(blank = True, null = True)
+
+# Table to store Stress result
+class STRESS(models.Model):
+    User = models.CharField(max_length = 100, blank = False, default = "UNKNOWN")
+    Date = models.DateTimeField(auto_now = False, blank = True, null=True)
+    Build = models.CharField(max_length = 100, blank = True, null = True)
+    Setup = models.CharField(max_length = 100, blank = True, null = True) # we can make this as list field also
+    CfgFileUsed = models.CharField(max_length = 100, blank = True, null = True)
+    Result = models.CharField(max_length = 14, blank = True, null = True)
+    Bugs = models.CharField(max_length = 500, blank = True, null = True) # we can make this as list field also
+    Notes = models.TextField(blank = True, null = True)
 
 # UNIVERSAL DATABASE ENTITY
 class RELEASES(models.Model):
