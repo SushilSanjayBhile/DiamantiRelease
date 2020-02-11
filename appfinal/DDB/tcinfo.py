@@ -10,6 +10,49 @@ from .views import GenerateLogData
 from django.db.models import Q
 
 @csrf_exempt
+def WHOLE_GUI_TC_INFO(request, Release):
+    if request.method == "GET":
+        AllInfoData = []
+        statusDict = {}
+
+        index = int(request.GET.get('index', 0))
+
+        #Domain = str(request.GET.get('Domain', None))
+        SubDomain = str(request.GET.get('SubDomain', None))
+        #CardType = str(request.GET.get('CardType', None))
+        Priority = str(request.GET.get('Priority', None))
+
+        statusdata = TC_STATUS.objects.using(Release).all().order_by('Date')
+        infodata = TC_INFO.objects.all().using(Release).filter(Domain = "GUI")
+
+        #if Domain != 'None':
+        #    infodata = infodata.filter(Domain = Domain)
+        if SubDomain != 'None':
+            infodata = infodata.filter(SubDomain = SubDomain)
+        #if CardType != 'None':
+        #    infodata = infodata.filter(CardType = CardType)
+        if Priority != 'None':
+            infodata = infodata.filter(Priority = Priority)
+
+        count = int(request.GET.get('count', len(infodata)))
+        try:
+            infodata = infodata[index : (index + count)]
+        except:
+            allDataCount = info.count()
+            if index < allDataCount and count < allDataCount:
+                infodata = infodata[index:count]
+            elif index < allDataCount:
+                infodata = infodata[index:]
+            else:
+                infodata = TC_INFO.objects.using(Release).all()
+
+        infoserializer = TC_INFO_SERIALIZER(infodata, many = True)
+
+        print("total filtered test cases count: ", len(infoserializer.data))
+        return HttpResponse(json.dumps(infoserializer.data))
+
+
+@csrf_exempt
 def WHOLE_TC_INFO(request, Release):
     if request.method == "GET":
         AllInfoData = []
@@ -20,6 +63,7 @@ def WHOLE_TC_INFO(request, Release):
         Domain = str(request.GET.get('Domain', None))
         SubDomain = str(request.GET.get('SubDomain', None))
         CardType = str(request.GET.get('CardType', None))
+        Priority = str(request.GET.get('Priority', None))
 
         statusdata = TC_STATUS.objects.using(Release).all().order_by('Date')
         infodata = TC_INFO.objects.all().using(Release).filter(~Q(Domain = "GUI"))
@@ -30,6 +74,8 @@ def WHOLE_TC_INFO(request, Release):
             infodata = infodata.filter(SubDomain = SubDomain)
         if CardType != 'None':
             infodata = infodata.filter(CardType = CardType)
+        if Priority != 'None':
+            infodata = infodata.filter(Priority = Priority)
 
         count = int(request.GET.get('count', len(infodata)))
         try:

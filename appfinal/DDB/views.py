@@ -210,12 +210,10 @@ def TCAGGREGATE(Release):
         data = TC_STATUS.objects.using(Release).all()
         serializer = TC_STATUS_SERIALIZER(data, many=True)
 
-        tcinfo = TC_INFO.objects.using(Release).all()
+        tcinfo = TC_INFO.objects.using(Release).filter(~Q(Domain = "GUI"))
         tcinfoserializer = TC_INFO_SERIALIZER(tcinfo, many=True)
 
         automated = len(serializer.data)
-        print("this is total", total)
-        print("automated", automated)
         nonautomated = total - automated
         notapplicable = total - (automated + nonautomated)
 
@@ -223,7 +221,7 @@ def TCAGGREGATE(Release):
         for tc in tcinfo:
             dictionary['AvailableScenarios'].append(tc['Scenario'])
 
-        tcinfo = TC_INFO.objects.using(Release).values('Domain').distinct()
+        tcinfo = TC_INFO.objects.using(Release).values('Domain').filter(~Q(Domain = "GUI")).distinct()
         for tc in tcinfo:
             # dictionary['AvailableDomainOptions'].append(tc['Domain']) 
 
