@@ -172,6 +172,9 @@ def GUITCSTATUSGETPOSTVIEW(request, Release):
         if fd.is_valid():
             data = fd.save(commit = False)
             data.save(using = Release)
+            if "Activity" in req:
+                AD = req['Activity']
+                GenerateLogData(AD['UserName'], AD['RequestType'], AD['URL'], AD['LogData'], AD['TcID'], AD['CardType'], AD['Release'])
         else:
             print(req)
             print(fd.errors)
@@ -210,37 +213,38 @@ def TCAGGREGATE(Release):
         data = TC_STATUS.objects.using(Release).all()
         serializer = TC_STATUS_SERIALIZER(data, many=True)
 
-        tcinfo = TC_INFO.objects.using(Release).all()
+        tcinfo = TC_INFO.objects.using(Release).filter(~Q(Domain = "GUI")).filter(~Q(Priority = "NA"))
         tcinfoserializer = TC_INFO_SERIALIZER(tcinfo, many=True)
 
-        automated = len(serializer.data)
-        print("this is total", total)
-        print("automated", automated)
-        nonautomated = total - automated
-        notapplicable = total - (automated + nonautomated)
+        automated = tcinfo.filter(~Q(TcName = "TC NOT AUTOMATED")).count()
+        nonautomated = tcinfo.filter(TcName = "TC NOT AUTOMATED").count()
+        notapplicable = TC_INFO.objects.using(Release).filter(~Q(Domain = "GUI")).filter(Priority = "NA").count()
 
-        tcinfo = TC_INFO.objects.using(Release).values('Scenario').distinct()
-        for tc in tcinfo:
+        scenario = TC_INFO.objects.using(Release).values('Scenario').distinct()
+        for tc in scenario:
             dictionary['AvailableScenarios'].append(tc['Scenario'])
 
-        tcinfo = TC_INFO.objects.using(Release).values('Domain').distinct()
-        for tc in tcinfo:
-            # dictionary['AvailableDomainOptions'].append(tc['Domain']) 
+        domains = tcinfo.values('Domain').distinct()
+        for tc in domains:
+            domain = tc['Domain']
+            # dictionary['AvailableDomainOptions'].append(domain) 
 
-            abc = TC_INFO.objects.using(Release).values('SubDomain').filter(Domain = tc['Domain']).distinct()
-            for a in abc:
-                if tc['Domain'] in dictionary['AvailableDomainOptions']:
-                    dictionary['AvailableDomainOptions'][tc['Domain']].append(a['SubDomain'])
+            subdomains = tcinfo.values('SubDomain').filter(Domain = domain).distinct()
+            for sd in subdomains:
+                subdomain = sd['SubDomain']
+
+                if domain in dictionary['AvailableDomainOptions']:
+                    dictionary['AvailableDomainOptions'][domain].append(subdomain)
                 else:
-                    dictionary['AvailableDomainOptions'][tc['Domain']] = []
-                    dictionary['AvailableDomainOptions'][tc['Domain']].append(a['SubDomain'])
+                    dictionary['AvailableDomainOptions'][domain] = []
+                    dictionary['AvailableDomainOptions'][domain].append(subdomain)
 
             tccount = 0
 
-            if tc['Domain'] not in dictionary['domain'] and tc['Domain'] != "GUI":
-                dictionary['domain'][tc['Domain']] = {}
+            if domain not in dictionary['domain']:
+                dictionary['domain'][domain] = {}
 
-                dictionary['domain'][tc['Domain']]['Tested'] = {}
+                dictionary['domain'][domain]['Tested'] = {}
 
                 domainallcount = TC_INFO.objects.using(Release).filter(Domain = tc['Domain']).filter(~Q(Priority = 'NA')).count()
                 dictionary['domain'][tc['Domain']]['NotApplicable'] = 0
@@ -310,6 +314,9 @@ def USER_INFO_GET_POST_VIEW(request):
         fd = UserInfoForm(req)
         if fd.is_valid():
             fd.save()
+            if "Activity" in req:
+                AD = req['Activity']
+                GenerateLogData(AD['UserName'], AD['RequestType'], AD['URL'], AD['LogData'], AD['TcID'], AD['CardType'], AD['Release'])
         else:
             print(req)
             print(fd.errors)
@@ -346,6 +353,9 @@ def USER_INFO_SPECIFIC_BY_NAME(request, email):
         data.role = req['role']
         #data.PreviousCompany = req["PreviousCompany"]
         data.save()
+        if "Activity" in req:
+            AD = req['Activity']
+            GenerateLogData(AD['UserName'], AD['RequestType'], AD['URL'], AD['LogData'], AD['TcID'], AD['CardType'], AD['Release'])
 
         #if fd.is_valid():
         #     data = fd.save(commit = False)
@@ -419,6 +429,9 @@ def RELEASEINFOPOST(request):
             else:
                 print("Created Database succesfully")
             fd.save()
+            if "Activity" in req:
+                AD = req['Activity']
+                GenerateLogData(AD['UserName'], AD['RequestType'], AD['URL'], AD['LogData'], AD['TcID'], AD['CardType'], AD['Release'])
             # return JsonResponse({'Sucess': 'SUCCESSFULLY ADDED NEW RELEASE'}, status = 200)
             print("SUCCESSFULLY ADDED NEW RELEASE")
             return HttpResponse("SUCCESSFULLY ADDED NEW RELEASE")
@@ -458,6 +471,9 @@ def RELEASEINFO(request, Release):
     elif request.method == "DELETE":
         try:
             data = RELEASES.objects.get(ReleaseNumber__icontains = Release).delete()
+            if "Activity" in req:
+               AD = request['Activity']
+               GenerateLogData(AD['UserName'], AD['RequestType'], AD['URL'], AD['LogData'], AD['TcID'], AD['CardType'], AD['Release'])
             # return JsonResponse({'Success': "DELETED SUCCESSFULLY"}, status = 200)
             return HttpResponse("DELETED SUCCESSFULLY")
         except RELEASES.DoesNotExist:
@@ -473,6 +489,9 @@ def RELEASEINFO(request, Release):
             print("new aratI", req)
             if serializer.is_valid():
                 serializer.save()
+                if "Activity" in req:
+                    AD = req['Activity']
+                    GenerateLogData(AD['UserName'], AD['RequestType'], AD['URL'], AD['LogData'], AD['TcID'], AD['CardType'], AD['Release'])
             else:
                 print(serializer.errors)
             # return JsonResponse({'Success': "RECORD UPDATED SUCCESSFULLY"}, status = 200)
@@ -531,6 +550,9 @@ def USER_LOGIN_VIEW(request):
             fd = UserInfoForm(data)
             if fd.is_valid():
                 fd.save()
+                if "Activity" in req:
+                    AD = req['Activity']
+                    GenerateLogData(AD['UserName'], AD['RequestType'], AD['URL'], AD['LogData'], AD['TcID'], AD['CardType'], AD['Release'])
                 return JsonResponse({'role': data['Role']}, status = 200)
             else:
                 return JsonResponse({'error': fd.errors}, status = 400)

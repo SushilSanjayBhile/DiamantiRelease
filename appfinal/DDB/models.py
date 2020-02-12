@@ -162,7 +162,7 @@ class E2E(models.Model):
     Build = models.CharField(max_length = 100, blank = True, null = True)
     Result = models.CharField(max_length = 14, blank = True, null = True)
     Bugs = models.CharField(max_length = 500, blank = True, null = True) # we can make this as list field also
-    Setup = models.CharField(max_length = 100, blank = True, null = True) # we can make this as list field also
+    CardType = models.CharField(max_length = 100, blank = True, null = True) # we can make this as list field also
     NoOfTCsPassed = models.IntegerField(blank = True, null = True)
     E2EFocus = models.CharField(max_length = 100, blank = True, null = True)
     Notes = models.TextField(blank = True, null = True)
@@ -175,7 +175,8 @@ class LONGEVITY(models.Model):
     Build = models.CharField(max_length = 100, blank = True, null = True)
     Result = models.CharField(max_length = 14, blank = True, null = True)
     Bugs = models.CharField(max_length = 500, blank = True, null = True) # we can make this as list field also
-    Setup = models.CharField(max_length = 100, blank = True, null = True) # we can make this as list field also
+    CardType = models.CharField(max_length = 100, blank = True, null = True) # we can make this as list field also
+    NoOfDuration = models.IntegerField(blank = True, null = True)
     Notes = models.TextField(blank = True, null = True)
 
 # Table to store Stress result
@@ -183,9 +184,11 @@ class STRESS(models.Model):
     User = models.CharField(max_length = 100, blank = False, default = "UNKNOWN")
     Date = models.DateTimeField(auto_now = False, blank = True, null=True)
     Build = models.CharField(max_length = 100, blank = True, null = True)
-    Setup = models.CharField(max_length = 100, blank = True, null = True) # we can make this as list field also
+    CardType = models.CharField(max_length = 100, blank = True, null = True) # we can make this as list field also
     CfgFileUsed = models.CharField(max_length = 100, blank = True, null = True)
     Result = models.CharField(max_length = 14, blank = True, null = True)
+    LinkFlap = models.CharField(max_length = 14, blank = True, null = True)
+    NoOfIteration = models.IntegerField(blank = True, null = True)
     Bugs = models.CharField(max_length = 500, blank = True, null = True) # we can make this as list field also
     Notes = models.TextField(blank = True, null = True)
 

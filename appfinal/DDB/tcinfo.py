@@ -10,6 +10,49 @@ from .views import GenerateLogData
 from django.db.models import Q
 
 @csrf_exempt
+def WHOLE_GUI_TC_INFO(request, Release):
+    if request.method == "GET":
+        AllInfoData = []
+        statusDict = {}
+
+        index = int(request.GET.get('index', 0))
+
+        #Domain = str(request.GET.get('Domain', None))
+        SubDomain = str(request.GET.get('SubDomain', None))
+        #CardType = str(request.GET.get('CardType', None))
+        Priority = str(request.GET.get('Priority', None))
+
+        statusdata = TC_STATUS.objects.using(Release).all().order_by('Date')
+        infodata = TC_INFO.objects.all().using(Release).filter(Domain = "GUI")
+
+        #if Domain != 'None':
+        #    infodata = infodata.filter(Domain = Domain)
+        if SubDomain != 'None':
+            infodata = infodata.filter(SubDomain = SubDomain)
+        #if CardType != 'None':
+        #    infodata = infodata.filter(CardType = CardType)
+        if Priority != 'None':
+            infodata = infodata.filter(Priority = Priority)
+
+        count = int(request.GET.get('count', len(infodata)))
+        try:
+            infodata = infodata[index : (index + count)]
+        except:
+            allDataCount = info.count()
+            if index < allDataCount and count < allDataCount:
+                infodata = infodata[index:count]
+            elif index < allDataCount:
+                infodata = infodata[index:]
+            else:
+                infodata = TC_INFO.objects.using(Release).all()
+
+        infoserializer = TC_INFO_SERIALIZER(infodata, many = True)
+
+        print("total filtered test cases count: ", len(infoserializer.data))
+        return HttpResponse(json.dumps(infoserializer.data))
+
+
+@csrf_exempt
 def WHOLE_TC_INFO(request, Release):
     if request.method == "GET":
         AllInfoData = []
@@ -20,6 +63,7 @@ def WHOLE_TC_INFO(request, Release):
         Domain = str(request.GET.get('Domain', None))
         SubDomain = str(request.GET.get('SubDomain', None))
         CardType = str(request.GET.get('CardType', None))
+        Priority = str(request.GET.get('Priority', None))
 
         statusdata = TC_STATUS.objects.using(Release).all().order_by('Date')
         infodata = TC_INFO.objects.all().using(Release).filter(~Q(Domain = "GUI"))
@@ -30,6 +74,8 @@ def WHOLE_TC_INFO(request, Release):
             infodata = infodata.filter(SubDomain = SubDomain)
         if CardType != 'None':
             infodata = infodata.filter(CardType = CardType)
+        if Priority != 'None':
+            infodata = infodata.filter(Priority = Priority)
 
         count = int(request.GET.get('count', len(infodata)))
         try:
@@ -102,12 +148,12 @@ def TC_INFO_GET_POST_VIEW(request, Release):
                 conflictFlag = True
                 #return JsonResponse({'message': 'Duplicate TcID'}, status = 409)
             else:
-            	print(card)
             	serializer = TC_INFO_SERIALIZER(data, many = True)
             	newData  = req
             	newData = json.dumps(newData)
             	newData = json.loads(newData)
             	newData['CardType'] = card
+            	print(newData)
             	fd = TcInfoForm(newData)
 
             	if fd.is_valid():
@@ -323,8 +369,7 @@ def GET_TC_INFO_BY_ID(request, Release, id, card):
             for status in statusSerializer.data:
                 tcdata['StatusList'].append(status)
         except:
-            return HttpResponse({"ERROR": "NO RECORD FOUND"})
-            
+            return JsonResponse({'Not Found': "Record Not Found"}, status = 404)
         return HttpResponse(json.dumps(tcdata))
 
 @csrf_exempt
@@ -335,7 +380,6 @@ def UPDATE_TC_INFO_BY_ID(request, Release, id, card):
 
         data = TC_INFO.objects.using(Release).filter(TcID = id)
         serializer = TC_INFO_SERIALIZER(data, many = True)
-        newData = serializer.data
 
         for d in serializer.data:
             singleData = TC_INFO.objects.using(Release).filter(TcID = id).get(CardType = d['CardType'])
@@ -343,11 +387,16 @@ def UPDATE_TC_INFO_BY_ID(request, Release, id, card):
             updatedData = singleSerializer.data
 
             for key in req:
-                if key != "CardType" and key != "TcID" and key != "Activity":
+                if key == "NewTcID":
+                    verifyData = TC_INFO.objects.using(Release).filter(TcID = req['NewTcID']).filter(CardType = d['CardType'])
+                    if len(verifyData) > 0:
+                        errRecords.append(req)
+                        continue
+                    updatedData['TcID'] = req['NewTcID']
+                elif key != "Activity":
                     updatedData[key] = req[key]
 
             res = updateData(updatedData, singleData, Release)
-            #res = updateData(updatedData, singleData, "master")
             if res == 0:
                 errRecords.append(req)
             elif "Activity" in req:
@@ -355,6 +404,63 @@ def UPDATE_TC_INFO_BY_ID(request, Release, id, card):
                 GenerateLogData(AD['UserName'], AD['RequestType'], AD['URL'], AD['LogData'], AD['TcID'], AD['CardType'], AD['Release'])
         
         if len(errRecords) > 0:
-            return HttpResponse(json.dumps(errRecords))
-        return HttpResponse({"SUCCESS": "Record Successfully updated"})
+            return JsonResponse({'Conflict': errRecords}, status = 409)
+        return JsonResponse({'message': 'Success'}, status = 200)
 
+"""
+
+@csrf_exempt
+def TC_INFO_BY_ID(request, Release, id, card):
+    if request.method == "GET":
+        infoData = TC_INFO.objects.using(Release).filter(TcID = id).get(CardType = card)
+        activityData = LOGS.objects.using(Release).filter(TcID = id).filter(CardType = card)
+
+        activitySerializer = LOG_SERIALIZER(activityData, many = True)
+        infoSerializer = TC_INFO_SERIALIZER(infoData)
+
+        try:
+            statusData = TC_STATUS.objects.using(Release).filter(TcID = id).filter(CardType = card).order_by('Date')
+            statusSerializer = TC_STATUS_SERIALIZER(statusData, many=True)
+    
+            tcdata = infoSerializer.data
+            tcdata['Activity'] = activitySerializer.data
+            tcdata['StatusList'] = []
+            for status in statusSerializer.data:
+                tcdata['StatusList'].append(status)
+        except:
+            return JsonResponse({'Not Found': "Record Not Found"}, status = 404)
+        return HttpResponse(json.dumps(tcdata))
+
+    elif request.method == "PUT":
+        errRecords = []
+        req = json.loads(request.body.decode("utf-8"))
+
+        data = TC_INFO.objects.using(Release).filter(TcID = id)
+        serializer = TC_INFO_SERIALIZER(data, many = True)
+
+        for d in serializer.data:
+            singleData = TC_INFO.objects.using(Release).filter(TcID = id).get(CardType = d['CardType'])
+            singleSerializer = TC_INFO_SERIALIZER(singleData)
+            updatedData = singleSerializer.data
+
+            for key in req:
+                if key == "NewTcID":
+                    verifyData = TC_INFO.objects.using(Release).filter(TcID = req['NewTcID']).filter(CardType = d['CardType'])
+                    if len(verifyData) > 0:
+                        errRecords.append(req)
+                        continue
+                    updatedData['TcID'] = req['NewTcID']
+                elif key != "Activity":
+                    updatedData[key] = req[key]
+
+            res = updateData(updatedData, singleData, Release)
+            if res == 0:
+                errRecords.append(req)
+            elif "Activity" in req:
+                AD = req['Activity']
+                GenerateLogData(AD['UserName'], AD['RequestType'], AD['URL'], AD['LogData'], AD['TcID'], AD['CardType'], AD['Release'])
+        
+        if len(errRecords) > 0:
+            return JsonResponse({'Conflict': errRecords}, status = 409)
+        return JsonResponse({'message': 'Success'}, status = 200)
+"""

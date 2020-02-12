@@ -4,9 +4,10 @@ from .views import (TCSTATUSGETPOSTVIEW, USER_INFO_GET_POST_VIEW,
         GETSETUPWISETCINFO, RELEASEINFO, GETPLATFORMWISETCINFO, RELEASEINFOPOST,
         GETPLATFORMANDSETUPWISETCINFO, TCAGGREGATE, DOMAINWISETCSTATUS, DOMAINWISETCINFO, USER_LOGIN_VIEW,
         GUITCSTATUSGETPOSTVIEW, createDB)
-from .sanity import E2EView, StressView, LongevityView
+from .sanity import SANITY_VIEW
 
-from .tcinfo import TC_INFO_GET_POST_VIEW, GET_TC_INFO_BY_ID, WHOLE_TC_INFO, MULTIPLE_TC_UPDATION, UPDATE_TC_INFO_BY_ID, TcCountByFilter
+from .tcinfo import TC_INFO_GET_POST_VIEW, GET_TC_INFO_BY_ID, WHOLE_TC_INFO, MULTIPLE_TC_UPDATION, UPDATE_TC_INFO_BY_ID, TcCountByFilter, WHOLE_GUI_TC_INFO
+#from .tcinfo import TC_INFO_GET_POST_VIEW, TC_INFO_BY_ID, WHOLE_TC_INFO, MULTIPLE_TC_UPDATION, TC_INFO_BY_ID, TcCountByFilter, WHOLE_GUI_TC_INFO
 
 urlpatterns = [
     path('tcstatus/<str:Release>', TCSTATUSGETPOSTVIEW),
@@ -15,13 +16,17 @@ urlpatterns = [
 
     path('tcinfo/<str:Release>', TC_INFO_GET_POST_VIEW),
     path('tccount/<str:Release>', TcCountByFilter),
-    #path('tcinfo/<str:Release>/name/<str:name>/card/<str:card>', SPECIFIC_TC_INFO_BY_NAME),
-    path('tcinfo/<str:Release>/id/<str:id>/card/<str:card>', GET_TC_INFO_BY_ID),
     path('<str:Release>/tcinfo/domain/<str:Domain>', DOMAINWISETCINFO),
-    path('tcinfoput/<str:Release>/id/<str:id>/card/<str:card>', UPDATE_TC_INFO_BY_ID),
     path('tcupdate/<str:Release>', MULTIPLE_TC_UPDATION),
 
+    path('tcinfo/<str:Release>/id/<str:id>/card/<str:card>', GET_TC_INFO_BY_ID),
+    path('tcinfoput/<str:Release>/id/<str:id>/card/<str:card>', UPDATE_TC_INFO_BY_ID),
+    #path('tcinfo/<str:Release>/id/<str:id>/card/<str:card>', TC_INFO_BY_ID),
+
     path('wholetcinfo/<str:Release>', WHOLE_TC_INFO),
+    path('wholeguitcinfo/<str:Release>', WHOLE_GUI_TC_INFO),
+
+    path('sanity/<str:SanityType>/<str:Release>', SANITY_VIEW),
 
     path('user/login', USER_LOGIN_VIEW),
     path('userinfo/', USER_INFO_GET_POST_VIEW),
