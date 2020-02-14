@@ -8,6 +8,8 @@ from .models import TC_INFO, TC_STATUS, LOGS
 from .forms import TcInfoForm
 from .views import GenerateLogData
 from django.db.models import Q
+from .statusView import updateStatusID, updateStatusName, updateStatusDomain, updateStatusSubDomain
+from .log import updateLogID
 
 @csrf_exempt
 def WHOLE_GUI_TC_INFO(request, Release):
@@ -192,7 +194,7 @@ def TC_INFO_GET_POST_VIEW(request, Release):
 
     elif request.method == "GET":
         index = int(request.GET.get('index', 0))
-        count = int(request.GET.get('count', 100))
+        count = int(request.GET.get('count', 0))
 
         try:
             if count == 0:
@@ -255,7 +257,7 @@ def updateData(updatedData, data, Release):
 def TcCountByFilter(request, Release):
         print("COMING")
         countDict = {}
-        replaceDict = {'ManagementTestcases': "Management", "MultizoneCluster":"Multizone Cluster",  "NetworkTestCases":"Network", "Rbac":"RBAC", "Rbac":"RBAC","StorageMirrored-Tests":"Storage-Mirrored","Additionaltests":"Additional", "HelmTestCases":"Helm","Interfacetestcases":"Interface","Kubernetes-tests": "Kubernetes", "ManagementTestcases":"Management", "MultizoneCluster":"Multizone Cluster", "NetworkTestCases":"Network","QOSTestcases":"QOS","StorageMirrored-Tests":"Storage-Mirrored","StorageRemote-Tests":"Storage-Remote","StorageSnapshot-Tests":"Storage-Snapshot","Upgradetests":"Upgrade", "Storage-Tests":"Storage"}
+        replaceDict = {'Storage-DrivesetTCs':'Storage-Driveset','StoragePVC':'Storage-PVC','VagrantCluster':'Vagrant Cluster','SoftwareSolution':'Software Solution','ManagementTestcases': "Management", "MultizoneCluster":"Multizone Cluster",  "NetworkTestCases":"Network", "Rbac":"RBAC","StorageMirrored-Tests":"Storage-Mirrored","Additionaltests":"Additional", "HelmTestCases":"Helm","Interfacetestcases":"Interface","Kubernetes-tests": "Kubernetes", "ManagementTestcases":"Management", "MultizoneCluster":"Multizone Cluster", "NetworkTestCases":"Network","QOSTestcases":"QOS","StorageMirrored-Tests":"Storage-Mirrored","StorageRemote-Tests":"Storage-Remote","StorageSnapshot-Tests":"Storage-Snapshot","Upgradetests":"Upgrade", "Storage-Tests":"Storage"}
         for i in replaceDict:
             data = TC_INFO.objects.filter(Domain = i).using(Release)
             serializer = TC_INFO_SERIALIZER(data, many = True)
@@ -270,27 +272,7 @@ def TcCountByFilter(request, Release):
 
                 updatedData['Domain'] = replaceDict[i]
                 print(dat.Domain)
-                #print(updatedData, "\n",dat)
-                #updateData(updatedData, dat, Release)
-        return HttpResponse(json.dumps(countDict))
-
-def TcCountByFilter2(request, Release):
-        print("COMING")
-        countDict = {}
-        data = TC_INFO.objects.filter(Domain = "RBAC").using(Release)
-        serializer = TC_INFO_SERIALIZER(data, many = True)
-
-        for d in serializer.data:
-            card = d['CardType']
-            tcid = d['TcID']
-            dat = TC_INFO.objects.using(Release).filter(TcID = tcid).get(CardType = card)
-            d = json.dumps(d)
-            d = json.loads(d)
-            updatedData = d
-
-            if "-" not in d['TcID']:
-                print(d['TcID'], d['CardType'])
-                dat.delete()
+                updateData(updatedData, dat, Release)
         return HttpResponse(json.dumps(countDict))
 
 @csrf_exempt
@@ -313,7 +295,9 @@ def MULTIPLE_TC_UPDATION(request, Release):
             for key in req:
                 updatedData[key] = req[key]
 
-            res = updateData(updatedData, data, Release)
+            print(updatedData)
+            #res = updateData(updatedData, data, Release)
+            res = 1
             if res == 0:
                 print("error", req)
                 errRecords.append(req)
@@ -392,17 +376,29 @@ def UPDATE_TC_INFO_BY_ID(request, Release, id, card):
                     if len(verifyData) > 0:
                         errRecords.append(req)
                         continue
+                    TcID = updatedData['TcID']
                     updatedData['TcID'] = req['NewTcID']
                 elif key != "Activity":
                     updatedData[key] = req[key]
 
-            res = updateData(updatedData, singleData, Release)
+            #res = updateData(updatedData, singleData, Release)
+            res = 1
+            if res == 1:
+                if 'NewTcID' in req:
+                    updateStatusID(TcID, req['NewTcID'], Release)
+                    updateLogID(TcID, req['CardType'], req['NewTcID'], Release)
+                if 'NewTcname' in req:
+                    updateStatusName(TcID, req['newTcName'], Release) 
+                if 'NewDomain' in req:
+                    updateStatusDomain(TcID, req['NewDomain'], Release)
+                if 'NewSubDomain' in req:
+                    updateStatusSubDomain(TcID, req['NewSubDomain'], Release) 
             if res == 0:
                 errRecords.append(req)
             elif "Activity" in req:
                 AD = req['Activity']
                 GenerateLogData(AD['UserName'], AD['RequestType'], AD['URL'], AD['LogData'], AD['TcID'], AD['CardType'], AD['Release'])
-        
+
         if len(errRecords) > 0:
             return JsonResponse({'Conflict': errRecords}, status = 409)
         return JsonResponse({'message': 'Success'}, status = 200)

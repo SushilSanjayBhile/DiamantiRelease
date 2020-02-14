@@ -7,11 +7,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 # imports from django app
-from constraints import *
-from .models import TC_INFO, TC_STATUS, USER_INFO, LOGS, RELEASES, AGGREGATE_TC_STATE, TC_STATUS_GUI
-from .forms import TcInfoForm, TcStatusForm, UserInfoForm, LogForm, ReleaseInfoForm, AggregationForm, GuiTcInfoForm
+from .models import TC_INFO, TC_STATUS, USER_INFO, LOGS, RELEASES, AGGREGATE_TC_STATE
+from .forms import TcInfoForm, TcStatusForm, UserInfoForm, LogForm, ReleaseInfoForm, AggregationForm
 from DDB.serializers import TC_INFO_SERIALIZER, TC_STATUS_SERIALIZER, USER_SERIALIZER, LOG_SERIALIZER, \
-    RELEASE_SERIALIZER, AGGREGATION_SERIALIZER, TC_STATUS_GUI_SERIALIZER
+    RELEASE_SERIALIZER, AGGREGATION_SERIALIZER
+from .aggregation import TCAGGREGATE
 
 # Third party softwares / libraries
 import gzip
@@ -20,67 +20,6 @@ from sh import pg_dump
 from psycopg2 import sql
 import json, datetime, os, time
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-
-def createDB(release):
-    con = psycopg2.connect(dbname='postgres',
-        user=userName, host='',
-        password=passwd)
-
-    con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-
-    cur = con.cursor()
-
-    # verifying for database does not exist
-    cur.execute(sql.SQL("select datname from pg_database;"))
-    rows = cur.fetchall()
-    for row in rows:
-        if release in row:
-        	return 0
-
-    # creating and granting privileges to database
-    cur.execute(sql.SQL("CREATE DATABASE {}").format(
-            sql.Identifier(release))
-        )
-
-    cur.execute(sql.SQL("GRANT ALL PRIVILEGES ON DATABASE {} to {}").format(
-            sql.Identifier(release), sql.Identifier(userName))
-        )
-
-
-    string = "echo " + hostName + ":" + portNumber + ":" + release + ":" + userName + ":" + passwd
-    os.system(string + ">> ~/.pgpass")
-
-    os.system("pg_dump -h localhost -U " + userName + " -Fc master -f backup.sql")
-    os.system("pg_restore -h localhost -d " + release + " -U " + userName + " backup.sql")
-
-    lineNo = 0
-    with open('dp/settings.py', 'r') as fp:
-        f = fp.readlines()
-        for line in f:
-            lineNo += 1
-            if "DATABASES = {" in line:
-                
-                string = """    '{release}': {{
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': '{release}',
-        'USER': userName,
-        'PASSWORD': passwd,
-        'HOST': hostName,
-        'PORT': portNumber,
-        }},
-"""
-                finalString = string.format(release=release, userName=userName, passwd=passwd, hostName=hostName, portNumber=portNumber)
-                f.insert(lineNo, finalString)
-                contents = "".join(f)
-    fp.close()
-
-    newfp = open("dp/newsettings.py", "w+")
-    newfp.write(contents)
-    newfp.close()
-
-    os.system("cp dp/settings.py dp/oldsettings.py")
-    os.system("mv dp/newsettings.py dp/settings.py")
-    return 1
 
 @csrf_exempt
 def TCSTATUSGETPOSTVIEW(request, Release):
@@ -110,11 +49,11 @@ def TCSTATUSGETPOSTVIEW(request, Release):
 
     elif request.method == "GET":
         data = TC_STATUS.objects.using(Release).all().order_by('TcID')
-        # data = TC_STATUS.objects.using(Release).all().order_by('TcID')[:50]
         serializer = TC_STATUS_SERIALIZER(data, many=True)
         # return JsonResponse({'data': json.dumps(serializer.data)}, status = 200)
         return HttpResponse(json.dumps(serializer.data))
 
+"""
 @csrf_exempt
 def DOMAINWISETCSTATUS(request, Release, Domain):
     if request.method == "GET":
@@ -163,149 +102,12 @@ def DOMAINWISETCINFO(request, Release, Domain):
         serializer = TC_INFO_SERIALIZER(data, many=True)
         # return JsonResponse({'data': json.dumps(serializer.data)}, status = 200)
         return HttpResponse({len(serializer.data), json.dumps(serializer.data)})
-
-@csrf_exempt
-def GUITCSTATUSGETPOSTVIEW(request, Release):
-    if request.method == "POST":
-        req = json.loads(request.body.decode("utf-8"))
-        fd = GuiTcInfoForm(req)
-        if fd.is_valid():
-            data = fd.save(commit = False)
-            data.save(using = Release)
-            if "Activity" in req:
-                AD = req['Activity']
-                GenerateLogData(AD['UserName'], AD['RequestType'], AD['URL'], AD['LogData'], AD['TcID'], AD['CardType'], AD['Release'])
-        else:
-            print(req)
-            print(fd.errors)
-            return JsonResponse({'Error': fd.errors}, status = 400)
-        # GenerateLogData(1, 'POST', 'specificuserbyid/' + str(id) + " => " + json.dumps(req))
-        return HttpResponse("SUCCESS")
-        # return JsonResponse({'Success': "Record added successfully"}, status = 200)
-    elif request.method == "GET":
-        data = TC_STATUS_GUI.objects.using(Release).all()
-        serializer = TC_STATUS_GUI_SERIALIZER(data, many = True)
-        return HttpResponse(json.dumps(serializer.data))
-        # return JsonResponse({'data': json.dumps(serializer.data)}, status = 200)
+"""
 
 # @csrf_exempt
 # def DEFAULT_VALUE_SETTER_GETTER(request):
 #     if request.method == "POST":
         
-
-def TCAGGREGATE(Release):
-        dictionary = {}
-
-        dictionary['domain'] = {}
-        dictionary['AvailableDomainOptions'] = {}
-        dictionary['AvailableScenarios'] = []
-
-        total = 0
-        totalpass = 0
-        totalfail = 0
-        totalskipped = 0
-        totalnottested = 0
-
-        autopass = 0
-        autofail = 0
-        autoskipped = 0
-
-        data = TC_STATUS.objects.using(Release).all()
-        serializer = TC_STATUS_SERIALIZER(data, many=True)
-
-        tcinfo = TC_INFO.objects.using(Release).filter(~Q(Domain = "GUI")).filter(~Q(Priority = "NA"))
-        tcinfoserializer = TC_INFO_SERIALIZER(tcinfo, many=True)
-
-        automated = tcinfo.filter(~Q(TcName = "TC NOT AUTOMATED")).count()
-        nonautomated = tcinfo.filter(TcName = "TC NOT AUTOMATED").count()
-        notapplicable = TC_INFO.objects.using(Release).filter(~Q(Domain = "GUI")).filter(Priority = "NA").count()
-
-        scenario = TC_INFO.objects.using(Release).values('Scenario').distinct()
-        for tc in scenario:
-            dictionary['AvailableScenarios'].append(tc['Scenario'])
-
-        domains = tcinfo.values('Domain').distinct()
-        for tc in domains:
-            domain = tc['Domain']
-            # dictionary['AvailableDomainOptions'].append(domain) 
-
-            subdomains = tcinfo.values('SubDomain').filter(Domain = domain).distinct()
-            for sd in subdomains:
-                subdomain = sd['SubDomain']
-
-                if domain in dictionary['AvailableDomainOptions']:
-                    dictionary['AvailableDomainOptions'][domain].append(subdomain)
-                else:
-                    dictionary['AvailableDomainOptions'][domain] = []
-                    dictionary['AvailableDomainOptions'][domain].append(subdomain)
-
-            tccount = 0
-
-            if domain not in dictionary['domain']:
-                dictionary['domain'][domain] = {}
-
-                dictionary['domain'][domain]['Tested'] = {}
-
-                domainallcount = TC_INFO.objects.using(Release).filter(Domain = tc['Domain']).filter(~Q(Priority = 'NA')).count()
-                dictionary['domain'][tc['Domain']]['NotApplicable'] = 0
-
-                dictionary['domain'][tc['Domain']]['Tested']['auto'] = {}
-                dictionary['domain'][tc['Domain']]['Tested']['manual'] = {}
-
-                tcinfocount = TC_INFO.objects.using(Release).filter(TcName = "TC NOT AUTOMATED").filter(Domain = tc['Domain']).count()
-                tccount = TC_STATUS.objects.using(Release).filter(TcName = "TC NOT AUTOMATED").filter(Domain = tc['Domain'], Result = "Pass").count()
-                dictionary['domain'][tc['Domain']]['Tested']['manual']['Pass'] = tccount
-                totalpass += tccount
-                domainallcount -= tccount
-
-                tccount = TC_STATUS.objects.using(Release).filter(TcName = "TC NOT AUTOMATED").filter(Domain = tc['Domain'], Result = "Fail").count()
-                dictionary['domain'][tc['Domain']]['Tested']['manual']['Fail'] = tccount
-                totalfail += tccount
-                domainallcount -= tccount
-
-                tccount = TC_STATUS.objects.using(Release).filter(TcName = "TC NOT AUTOMATED").filter(Domain = tc['Domain'], Result = "NotTested").count()
-                dictionary['domain'][tc['Domain']]['Tested']['manual']['Skip'] = tccount
-                totalskipped += tccount
-
-                tcinfocount = TC_INFO.objects.using(Release).filter(~Q(TcName = "TC NOT AUTOMATED")).filter(Domain = tc['Domain']).count()
-                tccount = TC_STATUS.objects.using(Release).filter(~Q(TcName = "TC NOT AUTOMATED")).filter(Domain = tc['Domain'], Result = "Pass").count()
-                dictionary['domain'][tc['Domain']]['Tested']['auto']['Pass'] = tccount
-                totalpass += tccount
-                autopass += tccount
-                domainallcount -= tccount
-
-                tccount = TC_STATUS.objects.using(Release).filter(~Q(TcName = "TC NOT AUTOMATED")).filter(Domain = tc['Domain'], Result = "Fail").count()
-                dictionary['domain'][tc['Domain']]['Tested']['auto']['Fail'] = tccount
-                totalfail += tccount
-                autofail += tccount
-                domainallcount -= tccount
-
-                tccount = TC_STATUS.objects.using(Release).filter(~Q(TcName = "TC NOT AUTOMATED")).filter(Domain = tc['Domain'], Result = "NotTested").count()
-                dictionary['domain'][tc['Domain']]['Tested']['auto']['Skip'] = tccount
-                totalskipped += tccount
-                autoskipped += tccount
-
-                dictionary['domain'][tc['Domain']]['NotTested'] = domainallcount
-                totalnottested += dictionary['domain'][tc['Domain']]['NotTested']
-
-        dictionary['all'] = {}
-
-        dictionary['all']['Tested'] = {}
-#        dictionary['all']['NotTested'] = ((total - (autopass + autofail)) - (totalpass - autopass)) - (totalfail - autofail)
-        dictionary['all']['NotTested'] = totalnottested
-        dictionary['all']['NotApplicable'] = 0
-
-        dictionary['all']['Tested']['auto'] = {}
-        dictionary['all']['Tested']['auto']['Pass'] = autopass
-        dictionary['all']['Tested']['auto']['Fail'] = autofail
-        dictionary['all']['Tested']['auto']['Skip'] = autoskipped
-
-        dictionary['all']['Tested']['manual'] = {}
-        dictionary['all']['Tested']['manual']['Pass'] = totalpass - autopass
-        dictionary['all']['Tested']['manual']['Fail'] = totalfail - autofail
-        dictionary['all']['Tested']['manual']['Skip'] = totalskipped - autoskipped
-
-        return dictionary
 
 @csrf_exempt
 def USER_INFO_GET_POST_VIEW(request):
@@ -385,11 +187,7 @@ def GenerateLogData(UserName, RequestType, url, logData, tcid, card, Release):
     else:
         print("INVALID", fd.errors)
 
-list1 = {}
-list2 = {}
-
 def GETSETUPWISETCINFO(request, SetupName):
-    global list1
     tccounter = 0
     c = 0
 
@@ -511,6 +309,7 @@ def RELEASEINFO(request, Release):
     #     except:
     #         pass
 
+"""
 def GETPLATFORMWISETCINFO(request, OrchestrationPlatform):
     data = TC_INFO.objects.filter(OrchestrationPlatform__icontains = OrchestrationPlatform)
     serializer = TC_INFO_SERIALIZER(data, many=True)
@@ -525,6 +324,7 @@ def GETPLATFORMANDSETUPWISETCINFO(request, OrchestrationPlatform, SetupName):
     print("Setupname: ", SetupName, "orchestartion platform name: ", OrchestrationPlatform, "number of TCs: ", len(serializer.data))
     # return JsonResponse({'data': json.dumps(serializer.data)}, status = 200)
     return HttpResponse(json.dumps(serializer.data))
+"""
 
 @csrf_exempt
 def USER_LOGIN_VIEW(request):
@@ -559,3 +359,4 @@ def USER_LOGIN_VIEW(request):
             #GenerateLogData(data['UserName'], 'POST', 'user/login', json.dumps(req))
 
         return JsonResponse({'role': data['Role']}, status = 200)
+
